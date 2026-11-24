@@ -1,0 +1,154 @@
+capstone_finance.py
+
+
+"""
+ISM2411 Capstone — Small-Business Loan Portfolio
+Author: Your Name
+Dataset: capstone_finance.csv
+
+AI Disclosure:
+AI assistance was used for Python syntax, code structure,
+and debugging.
+"""
+
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import os
+
+# --------------------------------------------------
+# 1. LOAD DATA
+# --------------------------------------------------
+
+DATA_FILE = "data/capstone_finance.csv"
+
+df = pd.read_csv(DATA_FILE)
+
+print("RAW DATASET")
+print("Dataset size:", df.shape)
+print(df.head())
+
+print("\nCOLUMN INFORMATION")
+df.info()
+
+print("\nMISSING VALUES")
+print(df.isnull().sum())
+
+print("\nSUMMARY STATISTICS")
+print(df.describe())
+
+# --------------------------------------------------
+# 2. CLEAN DATA
+# --------------------------------------------------
+
+# Standardize column names
+df.columns = (
+    df.columns
+    .str.lower()
+    .str.strip()
+    .str.replace(" ", "_")
+)
+
+# Convert application dates into datetime format.
+# Invalid dates become missing values for inspection.
+df["application_date"] = pd.to_datetime(
+    df["application_date"],
+    errors="coerce"
+)
+
+# Convert money columns from text into numbers.
+# This preserves negative values because they may represent
+# meaningful financial losses.
+for column in ["loan_amount", "profit"]:
+    df[column] = (
+        df[column]
+        .astype("string")
+        .str.replace("$", "", regex=False)
+        .str.replace(",", "", regex=False)
+    )
+
+    df[column] = pd.to_numeric(
+        df[column],
+        errors="coerce"
+    )
+
+# Convert numeric columns
+numeric_columns = [
+    "interest_rate",
+    "term_months",
+    "credit_score",
+    "employees"
+]
+
+for column in numeric_columns:
+    df[column] = pd.to_numeric(
+        df[column],
+        errors="coerce"
+    )
+
+# Standardize category formatting
+category_columns = [
+    "industry",
+    "region",
+    "loan_status"
+]
+
+for column in category_columns:
+    df[column] = df[column].astype("string").str.strip().str.title()
+
+# Check category values so remaining spelling errors
+# can be identified and corrected based on the actual data.
+for column in category_columns:
+    print(f"\n{column.upper()} VALUES")
+    print(df[column].value_counts(dropna=False))
+
+# Remove exact duplicate rows.
+duplicate_count = df.duplicated().sum()
+print("\nExact duplicate rows:", duplicate_count)
+
+df = df.drop_duplicates()
+
+# Review missing values after conversion and duplicate removal.
+print("\nMISSING VALUES AFTER INITIAL CLEANING")
+print(df.isnull().sum())
+
+# Review possible impossible values before deciding how
+# to handle them. Do not automatically remove valid losses.
+print("\nCLEANING REVIEW")
+print(df.describe())
+
+# --------------------------------------------------
+# 3. SAVE CLEANED DATA
+# --------------------------------------------------
+
+os.makedirs("data", exist_ok=True)
+os.makedirs("charts", exist_ok=True)
+
+df.to_csv("data/clean_data.csv", index=False)
+
+print("\nCleaned dataset saved to data/clean_data.csv")
+print("Cleaned dataset size:", df.shape)
+
+# --------------------------------------------------
+# 4. BUSINESS QUESTIONS AND ANALYSIS
+# --------------------------------------------------
+
+# Add your 3–5 instructor-approved business questions.
+# Write your own analysis code and create one chart per question.
+# Use the actual cleaned dataset and verified results.
+
+# BUSINESS QUESTION 1:
+# Add your question and analysis here.
+
+# BUSINESS QUESTION 2:
+# Add your question and analysis here.
+
+# BUSINESS QUESTION 3:
+# Add your question and analysis here.
+
+# --------------------------------------------------
+# 5. FINAL CHECK
+# --------------------------------------------------
+
+print("\nPROJECT FINISHED")
+print("Review your charts, results, and cleaned dataset.")
